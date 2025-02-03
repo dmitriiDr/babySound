@@ -3,25 +3,25 @@
 
 // sin sample wave
 
-float calc_sin(float A, float f, float t) {
-    return A * sin(2 * M_PI * f * t);
+float calc_sin(float A, float f) {
+    return A * sin(2 * M_PI * f);
 }
 
 // method to create
 
-void ofApp::cbAudioProcess(float* outputBuffer, int bufferSize, int nChannels) {
-    for (int i = 0; i < bufferSize; i++) {
+// void ofApp::cbAudioProcess(float* outputBuffer, int bufferSize, int nChannels) {
+//     for (int i = 0; i < bufferSize; i++) {
 
-        float sample = calc_sin(volume, freq, phase);
-        phase += (freq / (float)sampleRate) * TWO_PI;
-        if (phase > TWO_PI) {
-            phase -= TWO_PI;
-        }
+//         float sample = calc_sin(volume, freq, phase);
+//         phase += (freq / (float)sampleRate) * TWO_PI;
+//         if (phase > TWO_PI) {
+//             phase -= TWO_PI;
+//         }
 
-        outputBuffer[i * nChannels] = sample * volume;
-        outputBuffer[i * nChannels + 1] = sample * volume;
-    }
-}
+//         outputBuffer[i * nChannels] = sample * volume;
+//         outputBuffer[i * nChannels + 1] = sample * volume;
+//     }
+// }
 
 
 //--------------------------------------------------------------
@@ -188,23 +188,21 @@ void ofApp::keyReleased  (int key){
 }
 
 //--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y) {
-    int width = ofGetWidth();
-    int height = ofGetHeight();
-
-    pan = (float)x / (float)width;  
-    float heightPct = ((height - y) / (float)height); 
-    freq = 20.0f + 20000.0f * heightPct;
-
-    phaseAdderTarget = (freq / (float)sampleRate) * TWO_PI;
-    volume = pan;
+//--------------------------------------------------------------
+void ofApp::mouseMoved(int x, int y ){
+	int width = ofGetWidth();
+	volume = (float)x / (float)width;
+	float height = (float)ofGetHeight();
+	float heightPct = ((height-y) / height);
+	freq = -30.0f + 5000.0f * heightPct;
+	phaseAdderTarget = (freq / (float) sampleRate) * TWO_PI;
 }
 
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
 	int width = ofGetWidth();
-	pan = (float)x / (float)width;
+	volume = (float)x / (float)width;
 }
 
 //--------------------------------------------------------------
@@ -235,7 +233,7 @@ void ofApp::windowResized(int w, int h){
 
 //--------------------------------------------------------------
 void ofApp::audioOut(ofSoundBuffer & buffer){
-	//pan = 0.5f;
+	pan = 0.5f;
 	float leftScale = 1 - pan;
 	float rightScale = pan;
 
@@ -248,16 +246,17 @@ void ofApp::audioOut(ofSoundBuffer & buffer){
 	if ( bNoise == true){
 		// ---------------------- noise --------------
 		for (size_t i = 0; i < buffer.getNumFrames(); i++){
-			lAudio[i] = buffer[i*buffer.getNumChannels()    ] = ofRandom(0, 1) * volume * leftScale;
-			rAudio[i] = buffer[i*buffer.getNumChannels() + 1] = ofRandom(0, 1) * volume * rightScale;
+			lAudio[i] = buffer[i*buffer.getNumChannels()    ] = ofRandom(0, 1) * leftScale;
+			rAudio[i] = buffer[i*buffer.getNumChannels() + 1] = ofRandom(0, 1) * rightScale;
 		}
 	} else {
 		phaseAdder = 0.95f * phaseAdder + 0.05f * phaseAdderTarget;
 		for (size_t i = 0; i < buffer.getNumFrames(); i++){
-			phase += phaseAdder;
-			float sample = sin(phase);
-			lAudio[i] = buffer[i*buffer.getNumChannels()    ] = sample * volume * leftScale;
-			rAudio[i] = buffer[i*buffer.getNumChannels() + 1] = sample * volume * rightScale;
+			// phase += phaseAdder;
+			float sample = calc_sin(volume, phase);
+			phase += (freq / (float)sampleRate) * TWO_PI;
+			lAudio[i] = buffer[i*buffer.getNumChannels()    ] = sample * leftScale;
+			rAudio[i] = buffer[i*buffer.getNumChannels() + 1] = sample * rightScale;
 		}
 	}
 
