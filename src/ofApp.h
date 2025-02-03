@@ -10,7 +10,7 @@ class ofApp : public ofBaseApp{
 		void update();
 		void draw();
 
-		void keyPressed  (int key);
+		void keyPressed(int key);
 		void keyReleased(int key);
 		void mouseMoved(int x, int y );
 		// void cbAudioProcess(float* outputBuffer, int bufferSize, int nChannels);
@@ -42,4 +42,6 @@ class ofApp : public ofBaseApp{
 		float 	phase = 0.0f;
 		float 	phaseAdder;
 		float 	phaseAdderTarget;
+		int 	waveType = 0;
+
 };

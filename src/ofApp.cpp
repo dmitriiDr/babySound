@@ -7,6 +7,20 @@ float calc_sin(float A, float f) {
     return A * sin(2 * M_PI * f);
 }
 
+float calc_square(float A, float f) {
+    float sineWave = sin(2 * M_PI * f);
+    
+    if (sineWave >= 0) {
+        return A;
+    } else {
+        return -A;
+    }
+}
+
+// float calcul_carre(float A, float f, float t, float brillance) {
+
+// }
+
 // method to create
 
 // void ofApp::cbAudioProcess(float* outputBuffer, int bufferSize, int nChannels) {
@@ -36,6 +50,7 @@ void ofApp::setup(){
 	phaseAdderTarget 	= 0.0f;
 	volume				= 0.5f;
 	bNoise 				= false;
+	int waveType 		= 0;
 
 	lAudio.assign(bufferSize, 0.0);
 	rAudio.assign(bufferSize, 0.0);
@@ -179,12 +194,15 @@ void ofApp::keyPressed  (int key){
 	if( key == 'e' ){
 		soundStream.stop();
 	}
-	
+
+	if (key == '1') waveType = 0; 
+	if (key == '2') waveType = 1; 
 }
 
 //--------------------------------------------------------------
-void ofApp::keyReleased  (int key){
-
+void ofApp::keyReleased(int key) {
+    // if (key == '1') waveType = 0;  // Sine
+    // if (key == '2') waveType = 1;  // Square
 }
 
 //--------------------------------------------------------------
@@ -194,7 +212,7 @@ void ofApp::mouseMoved(int x, int y ){
 	volume = (float)x / (float)width;
 	float height = (float)ofGetHeight();
 	float heightPct = ((height-y) / height);
-	freq = -30.0f + 5000.0f * heightPct;
+	freq = 2000.0f * heightPct;
 	phaseAdderTarget = (freq / (float) sampleRate) * TWO_PI;
 }
 
@@ -252,9 +270,16 @@ void ofApp::audioOut(ofSoundBuffer & buffer){
 	} else {
 		phaseAdder = 0.95f * phaseAdder + 0.05f * phaseAdderTarget;
 		for (size_t i = 0; i < buffer.getNumFrames(); i++){
-			// phase += phaseAdder;
-			float sample = calc_sin(volume, phase);
-			phase += (freq / (float)sampleRate) * TWO_PI;
+
+			float sample;
+			if (waveType == 0){
+				sample = calc_sin(volume, phase);
+			} else if (waveType == 1){
+				sample = calc_square(volume, phase);
+			}
+			phase += phaseAdder;
+			// float sample = calc_sin(volume, phase);
+			// phase += (freq / (float)sampleRate) * TWO_PI;
 			lAudio[i] = buffer[i*buffer.getNumChannels()    ] = sample * leftScale;
 			rAudio[i] = buffer[i*buffer.getNumChannels() + 1] = sample * rightScale;
 		}
