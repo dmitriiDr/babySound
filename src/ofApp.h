@@ -31,9 +31,10 @@ class ofApp : public ofBaseApp{
 		ofSoundStream soundStream;
 
 		float 	pan;
-		int		sampleRate;
+		int	sampleRate;
 		bool 	bNoise;
 		float 	volume=0.5f;
+		int bufferSize;
 		//float   freq = 440.0f;
 
 
