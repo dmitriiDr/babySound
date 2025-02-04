@@ -17,6 +17,32 @@ float calc_square(float A, float f) {
     }
 }
 
+float calc_square_F(float A, float f, int harmonic = 10) {
+	float sum = 0.0f;
+	for (int k = 1; k <= harmonic; k += 2) {
+		sum += sin(2 * M_PI * k * f) / k;
+	}
+	return (4 * A / M_PI) * sum;
+}
+
+float calc_saw(float A, float f, int harmonic = 10) {
+	float sum = 0.0f;
+	for (int k = 1; k <= harmonic; k ++) {
+		sum += pow(-1, k) * sin(2 * M_PI * k * f) / k;
+	}
+
+	return (2 * A / M_PI) * sum;
+}
+
+float calc_saw_reverse(float A, float f, int harmonic = 10) {
+	float sum = 0.0f;
+	for (int k = 1; k <= harmonic; k++) {
+		sum += sin(2 * M_PI * k * f) / k;
+	}
+
+	return (-2 * A / M_PI) * sum;
+}
+
 // float calcul_carre(float A, float f, float t, float brillance) {
 
 // }
