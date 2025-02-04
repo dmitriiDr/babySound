@@ -20,7 +20,10 @@ float calc_square(float A, float f) {
 float calc_square_F(float A, float f, int harmonic = 10) {
 	float sum = 0.0f;
 	for (int k = 1; k <= harmonic; k += 2) {
-		sum += sin(2 * M_PI * k * f) / k;
+		sum += sin(2 * M_PI * (k) * f) / (k);
+		if (k == harmonic) {
+			sum += sin(2 * M_PI * (k + A) * f) / (k + A);
+		}
 	}
 	return (4 * A / M_PI) * sum;
 }
@@ -28,7 +31,10 @@ float calc_square_F(float A, float f, int harmonic = 10) {
 float calc_saw(float A, float f, int harmonic = 10) {
 	float sum = 0.0f;
 	for (int k = 1; k <= harmonic; k ++) {
-		sum += pow(-1, k) * sin(2 * M_PI * k * f) / k;
+		sum += pow(-1, (k)) * sin(2 * M_PI * (k) * f) / (k);
+		if (k == harmonic) {
+			sum += pow(-1, (k)) * sin(2 * M_PI * (k+A) * f) / (k+A);
+		}
 	}
 
 	return (2 * A / M_PI) * sum;
@@ -37,10 +43,14 @@ float calc_saw(float A, float f, int harmonic = 10) {
 float calc_saw_reverse(float A, float f, int harmonic = 10) {
 	float sum = 0.0f;
 	for (int k = 1; k <= harmonic; k++) {
-		sum += sin(2 * M_PI * k * f) / k;
+		sum += sin(2 * M_PI * (k + A) * f) / (k + A);
 	}
 
 	return (-2 * A / M_PI) * sum;
+}
+
+float show_harmonic(int harmonic, float A) {
+	return harmonic;
 }
 
 // float calcul_carre(float A, float f, float t, float brillance) {
@@ -192,7 +202,7 @@ void ofApp::draw(){
 	
 		
 	ofSetColor(225);
-	string reportString = "harmonic: ("+ofToString(harmonic, 2)+") modify with -/+ keys\nform: ("+ofToString(form, 2)+") modify with f/r\nsynthesis: ";
+	string reportString = "harmonic: ("+ofToString(show_harmonic(harmonic, volume), 2)+") modify with -/+ keys\nform: ("+ofToString(form, 2)+") modify with f/r\nsynthesis: ";
 	if( !bNoise ){
 		reportString += "sine wave (" + ofToString(freq, 2) + "hz) modify with mouse y";
 	}else{

@@ -43,7 +43,7 @@ class ofApp : public ofBaseApp{
 		float 	phaseAdder;
 		float 	phaseAdderTarget;
 		int 	waveType = 0;
-		int	harmonic = 10;
+		int		harmonic = 10;
 		float	form = 0.0f;
 		//bool	fKeyHeld = false;
 
