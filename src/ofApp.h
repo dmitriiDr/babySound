@@ -24,6 +24,8 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 		
 		void audioOut(ofSoundBuffer & buffer);
+		void BPF(float low_cutoff, float high_cutoff, float f_sampling, int order, std::vector<float>& a, std::vector<float>& b);
+		void apply_filter(const std::vector<float> input, const std::vector<float> output, const std::vector<float> a, const std::vector<float> b);
 		
 		
 		ofSoundStream soundStream;

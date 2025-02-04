@@ -1,5 +1,6 @@
 #include "ofApp.h"
 #include <cmath>
+#include <vector>
 
 // sin sample wave
 
@@ -52,6 +53,39 @@ float calc_saw_reverse(float A, float f, int harmonic = 10) {
 float show_harmonic(int harmonic, float A) {
 	return harmonic;
 }
+
+// void ofApp::BPF(float low_cutoff, float high_cutoff, float f_sampling, int order, std::vector<float>& a, std::vector<float>& b) {
+
+// 	float nyquist = f_sampling * 0.5f;
+// 	float low = low_cutoff / nyquist;
+// 	float high = high_cutoff / nyquist;
+
+// 	float omega_low = tan(M_PI * low); // Convert Cutoff Frequencies to Angular Frequencies
+// 	float omega_high = tan(M_PI * high);
+// 	float omega0 = sqrt(omega_low * omega_high); // center angular frequency
+// 	float bw = omega_high - omega_low;
+
+// 	float d = 1.0 / cosh(order * acosh(1.0 / bw)); // damping factor
+// 	float norm = 1.0 / (1.0 + d * omega0);
+
+// 	a[0] = 1;
+// 	a[1] = -2 * omega0 * norm;
+// 	a[2] = (1.0 - d * omega0) * norm;
+
+// 	b[0] = d * omega0 * norm;
+// 	b[1] = 0;
+// 	b[2] = -b[0];
+
+// }
+
+// void ofApp::apply_filter(const std::vector<float> input, const std::vector<float> output, const std::vector<float> a, const std::vector<float> b) {
+// 		int n = 5;
+// 	    for (int i = 2; i < n; i++) {
+
+//         output[i] = b[0] * input[i] + b[1] * input[i - 1] + b[2] * input[i - 2]
+//                     - a[1] * output[i - 1] - a[2] * output[i - 2];
+//     }
+// }
 
 // float calcul_carre(float A, float f, float t, float brillance) {
 
@@ -372,12 +406,26 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 
 			float previousSample = sample;
 			sample = previousSample * 0.95 + sample * 0.05;
+			std::vector<float> sample_filtered;
+
+			std::vector<float> a, b;
+			// BPF(80, 100, 1000, 2, a, b);
+			// apply_filter(sample, sample_filtered, a, b)
 
 			// phase += phaseAdder;
 			// float sample = calc_sin(volume, phase);
 			phase += (freq / (float)sampleRate) * TWO_PI;
+
+			// no filter-------------------------------------------------------------------------------------------
 			lAudio[i] = buffer[i * buffer.getNumChannels()] = sample * volume * leftScale;
 			rAudio[i] = buffer[i * buffer.getNumChannels() + 1] = sample * volume * rightScale;
+			// ----------------------------------------------------------------------------------------------------
+
+			// lAudio[i] = buffer[i * buffer.getNumChannels()] = sample_filtered;
+			// rAudio[i] = buffer[i * buffer.getNumChannels() + 1] = sample_filtered;
+			
+
+
 		}
 	}
 
