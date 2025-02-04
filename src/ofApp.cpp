@@ -113,7 +113,7 @@ void ofApp::setup(){
 
 	ofBackground(34, 34, 34);
 	
-	int bufferSize		= 512;
+	bufferSize		= 512;
 	sampleRate 			= 44100;
 	phase 				= 0;
 	phaseAdder 			= 0.0f;
