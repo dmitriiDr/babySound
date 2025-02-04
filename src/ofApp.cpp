@@ -210,13 +210,13 @@ void ofApp::draw(){
 		ofPopMatrix();
 	ofPopStyle();
 
-	// draw the right channel:
+// draw the DFT channel:
 	ofPushStyle();
 		ofPushMatrix();
 		ofTranslate(32, 350, 0);
 			
 		ofSetColor(225);
-		ofDrawBitmapString("Right Channel", 4, 18);
+		ofDrawBitmapString("DFT Channel", 4, 18);
 		
 		ofSetLineWidth(1);	
 		ofDrawRectangle(0, 0, 900, 200);
@@ -225,14 +225,15 @@ void ofApp::draw(){
 		ofSetLineWidth(3);
 					
 			ofBeginShape();
-			for (unsigned int i = 0; i < rAudio.size(); i++){
-				float x =  ofMap(i, 0, rAudio.size(), 0, 900, true);
-				ofVertex(x, 100 -rAudio[i]*180.0f);
+			for (unsigned int i = 0; i < norm.size(); i++){
+				float x =  ofMap(i, 0, norm.size(), 0, 900, true);
+				ofVertex(x, 100 -norm[i]*180.0f);
 			}
 			ofEndShape(false);
 			
 		ofPopMatrix();
 	ofPopStyle();
+	
 	
 		
 	ofSetColor(225);
@@ -440,3 +441,43 @@ void ofApp::gotMessage(ofMessage msg){
 void ofApp::dragEvent(ofDragInfo dragInfo){ 
 
 }
+
+
+
+
+
+void ofApp::calcul_dft(vector <float> & audio, int bufferSize,  vector <float> & norm, vector <float> & freq, vector <float> & real_part, vector <float> & im_part){ 
+	float n=bufferSize;
+	float delta_norm=0;
+
+	real_part.assign(bufferSize, 0.0);
+	im_part.assign(bufferSize, 0.0);
+	norm.assign(bufferSize, 0.0);
+	freq.assign(bufferSize, 0.0);
+
+	for (int k=0; k < n; k++){
+		for (int m=0; m < n; m++){
+				real_part[k]= real_part[k] + audio[m]*cos(TWO_PI* m*k/n);
+				im_part[k] = im_part[k] + audio[m]*sin(TWO_PI* m*k/n);
+
+			}
+		norm[k] = sqrt(pow(real_part[k],2)+ pow(im_part[k],2));
+		freq[k] = k/(sampleRate*n);
+		if (norm[k] > delta_norm){
+			delta_norm = norm[k];
+
+
+		}
+		
+		}
+	for (int k=0; k < n; k++){
+		norm[k] = (norm[k]/delta_norm)-0.5;
+		cout<<norm[k]<<' ';
+
+	} 
+		cout<<endl<<endl<<endl;
+
+	/*for (int m=0; m < n; m++){
+		cout<<audio[m]<<' ';
+	}*/
+} 
