@@ -204,25 +204,40 @@ void ofApp::draw(){
 
 
 //--------------------------------------------------------------
-void ofApp::keyPressed  (int key){
-	if (key == '-' || key == '_' ){
-		volume -= 0.05;
-		volume = MAX(volume, 0);
-	} else if (key == '+' || key == '=' ){
-		volume += 0.05;
-		volume = MIN(volume, 1);
+void ofApp::keyPressed(int key) {
+	if (key == '_' || key == '-') {
+		harmonic = std::max(harmonic - 1, 0);
+		//harmonic = MAX(volume, 0);
 	}
-	
-	if( key == 's' ){
+	else if (key == '=' || key == '+') {
+		harmonic = std::min(harmonic + 1, 20);
+		//volume = MIN(volume, 1);
+	}
+
+	if (key == 's') {
 		soundStream.start();
 	}
-	
-	if( key == 'e' ){
+
+	if (key == 'e') {
 		soundStream.stop();
 	}
 
-	if (key == '1') waveType = 0; 
-	if (key == '2') waveType = 1; 
+	if (key == '1') waveType = 0;
+	if (key == '2') waveType = 1;
+	if (key == '3') waveType = 2;
+	if (key == '4') waveType = 3;
+	if (key == '5') waveType = 4;
+
+	/*if (key == 'f') {
+		fKeyHeld = true;
+	}*/
+
+	if (key == 'f') {
+		form = std::min(form + 0.1f, 1.0f);
+	}
+	if (key == 'r') {
+		form = std::max(form - 0.1f, 0.0f);
+	}
 }
 
 //--------------------------------------------------------------
@@ -276,38 +291,77 @@ void ofApp::windowResized(int w, int h){
 }
 
 //--------------------------------------------------------------
-void ofApp::audioOut(ofSoundBuffer & buffer){
+void ofApp::audioOut(ofSoundBuffer& buffer) {
 	pan = 0.5f;
 	float leftScale = 1 - pan;
 	float rightScale = pan;
 
 	// sin (n) seems to have trouble when n is very large, so we
 	// keep phase in the range of 0-TWO_PI like this:
-	while (phase > TWO_PI){
+	while (phase > TWO_PI) {
 		phase -= TWO_PI;
 	}
 
-	if ( bNoise == true){
+	if (bNoise == true) {
 		// ---------------------- noise --------------
-		for (size_t i = 0; i < buffer.getNumFrames(); i++){
-			lAudio[i] = buffer[i*buffer.getNumChannels()    ] = ofRandom(0, 1) * leftScale;
-			rAudio[i] = buffer[i*buffer.getNumChannels() + 1] = ofRandom(0, 1) * rightScale;
+		for (size_t i = 0; i < buffer.getNumFrames(); i++) {
+			lAudio[i] = buffer[i * buffer.getNumChannels()] = ofRandom(0, 1) * leftScale;
+			rAudio[i] = buffer[i * buffer.getNumChannels() + 1] = ofRandom(0, 1) * rightScale;
 		}
-	} else {
+	}
+	else {
 		phaseAdder = 0.95f * phaseAdder + 0.05f * phaseAdderTarget;
-		for (size_t i = 0; i < buffer.getNumFrames(); i++){
+		for (size_t i = 0; i < buffer.getNumFrames(); i++) {
 
 			float sample;
-			if (waveType == 0){
+
+			// uncomment if you want to use separate wave forms...................................
+
+			/*if (waveType == 0) {
 				sample = calc_sin(volume, phase);
-			} else if (waveType == 1){
+			}
+			else if (waveType == 1) {
 				sample = calc_square(volume, phase);
 			}
+			else if (waveType == 2) {
+				sample = calc_square_F(volume, phase, harmonic);
+			}
+			else if (waveType == 3) {
+				sample = calc_saw(volume, phase, harmonic);
+			}
+			else if (waveType == 4) {
+				sample = calc_saw_reverse(volume, phase, harmonic);
+			}*/
+
+			//...................................................................................
+
+			if (form == 0.0f) {
+				sample = calc_sin(volume, phase);
+			}
+			else if (form > 0.0f && form < 0.5f) {
+				// Blend sine and square
+				float square = calc_square_F(volume, phase, harmonic);
+				float sine = calc_sin(volume, phase);
+				sample = sine * (1.0f - form * 2.0f) + square * (form * 2.0f);
+			}
+			else if (form == 0.5f) {
+				sample = calc_square_F(volume, phase, harmonic);
+			}
+			else if (form > 0.5f && form < 1.0f) {
+				// Blend square and sawtooth
+				float square = calc_square_F(volume, phase, harmonic);
+				float saw = calc_saw(volume, phase, harmonic);
+				sample = square * (2.0f * (1.0f - form)) + saw * (2.0f * (form - 0.5f));
+			}
+			else if (form == 1.0f) {
+				sample = calc_saw(volume, phase, harmonic);
+			}
+
 			phase += phaseAdder;
 			// float sample = calc_sin(volume, phase);
 			// phase += (freq / (float)sampleRate) * TWO_PI;
-			lAudio[i] = buffer[i*buffer.getNumChannels()    ] = sample * leftScale;
-			rAudio[i] = buffer[i*buffer.getNumChannels() + 1] = sample * rightScale;
+			lAudio[i] = buffer[i * buffer.getNumChannels()] = sample * leftScale;
+			rAudio[i] = buffer[i * buffer.getNumChannels() + 1] = sample * rightScale;
 		}
 	}
 
