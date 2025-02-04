@@ -211,7 +211,7 @@ void ofApp::draw(){
 	ofPopStyle();
 
 
-	calcul_dft(rAudio, bufferSize,  norm, freq, real_part, im_part);
+	calcul_dft(rAudio, bufferSize,  norm, myfreq, real_part, im_part);
 // draw the DFT channel:
 	ofPushStyle();
 		ofPushMatrix();
@@ -409,9 +409,9 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 
 			float previousSample = sample;
 			sample = previousSample * 0.95 + sample * 0.05;
-			std::vector<float> sample_filtered;
+			// std::vector<float> sample_filtered;
 
-			std::vector<float> a, b;
+			// std::vector<float> a, b;
 			// BPF(80, 100, 1000, 2, a, b);
 			// apply_filter(sample, sample_filtered, a, b)
 
@@ -448,14 +448,14 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 
 
 
-void ofApp::calcul_dft(vector <float> & audio, int bufferSize,  vector <float> & norm, vector <float> & freq, vector <float> & real_part, vector <float> & im_part){ 
+void ofApp::calcul_dft(vector <float> & audio, int bufferSize,  vector <float> & norm, vector <float> & myfreq, vector <float> & real_part, vector <float> & im_part){ 
 	float n=bufferSize;
 	float delta_norm=0;
 
 	real_part.assign(bufferSize, 0.0);
 	im_part.assign(bufferSize, 0.0);
 	norm.assign(bufferSize, 0.0);
-	freq.assign(bufferSize, 0.0);
+	myfreq.assign(bufferSize, 0.0);
 
 	for (int k=0; k < n; k++){
 		for (int m=0; m < n; m++){
@@ -464,7 +464,7 @@ void ofApp::calcul_dft(vector <float> & audio, int bufferSize,  vector <float> &
 
 			}
 		norm[k] = sqrt(pow(real_part[k],2)+ pow(im_part[k],2));
-		freq[k] = k/(sampleRate*n);
+		myfreq[k] = k/(sampleRate*n);
 		if (norm[k] > delta_norm){
 			delta_norm = norm[k];
 
@@ -474,10 +474,10 @@ void ofApp::calcul_dft(vector <float> & audio, int bufferSize,  vector <float> &
 		}
 	for (int k=0; k < n; k++){
 		norm[k] = (norm[k]/delta_norm)-0.5;
-		cout<<norm[k]<<' ';
+		//cout<<norm[k]<<' ';
 
 	} 
-		cout<<endl<<endl<<endl;
+	//	cout<<endl<<endl<<endl;
 
 	/*for (int m=0; m < n; m++){
 		cout<<audio[m]<<' ';

@@ -35,7 +35,7 @@ class ofApp : public ofBaseApp{
 		bool 	bNoise;
 		float 	volume=0.5f;
 		int bufferSize;
-		//float   freq = 440.0f;
+		float   freq = 440.0f;
 
 
 		vector <float> lAudio;
@@ -44,7 +44,7 @@ class ofApp : public ofBaseApp{
 		vector <float> real_part;
 		vector <float> im_part;
 		vector <float> norm;
-		vector <float> freq;
+		vector <float> myfreq;
 
 		
 		//------------------- for the simple sine wave synthesis
