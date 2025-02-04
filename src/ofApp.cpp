@@ -113,8 +113,8 @@ void ofApp::setup(){
 
 	ofBackground(34, 34, 34);
 	
-	bufferSize		= 512;
-	sampleRate 			= 44100;
+	bufferSize			= 512;
+	sampleRate 			= 6000; //= 44100;
 	phase 				= 0;
 	phaseAdder 			= 0.0f;
 	phaseAdderTarget 	= 0.0f;
@@ -420,8 +420,8 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 			phase += (freq / (float)sampleRate) * TWO_PI;
 
 			// no filter-------------------------------------------------------------------------------------------
-			lAudio[i] = buffer[i * buffer.getNumChannels()] = sample * volume * leftScale;
-			rAudio[i] = buffer[i * buffer.getNumChannels() + 1] = sample * volume * rightScale;
+			lAudio[i] = buffer[i * buffer.getNumChannels()] = sample * leftScale;
+			rAudio[i] = buffer[i * buffer.getNumChannels() + 1] = sample * rightScale;
 			// ----------------------------------------------------------------------------------------------------
 
 			// lAudio[i] = buffer[i * buffer.getNumChannels()] = sample_filtered;
