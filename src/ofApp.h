@@ -26,7 +26,7 @@ class ofApp : public ofBaseApp{
 		void audioOut(ofSoundBuffer & buffer);
 		void BPF(float low_cutoff, float high_cutoff, float f_sampling, int order, std::vector<float>& a, std::vector<float>& b);
 		void apply_filter(const std::vector<float> input, const std::vector<float> output, const std::vector<float> a, const std::vector<float> b);
-		
+		void calcul_dft(vector <float> & audio, int bufferSize,  vector <float> & norm, vector <float> & freq, vector <float> & real_part, vector <float> & im_part) ;
 		
 		ofSoundStream soundStream;
 
@@ -34,10 +34,17 @@ class ofApp : public ofBaseApp{
 		int		sampleRate;
 		bool 	bNoise;
 		float 	volume=0.5f;
-		float   freq = 440.0f;
+		//float   freq = 440.0f;
+
 
 		vector <float> lAudio;
 		vector <float> rAudio;
+
+		vector <float> real_part;
+		vector <float> im_part;
+		vector <float> norm;
+		vector <float> freq;
+
 		
 		//------------------- for the simple sine wave synthesis
 		float 	targetFrequency;
