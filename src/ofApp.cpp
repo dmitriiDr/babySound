@@ -210,6 +210,8 @@ void ofApp::draw(){
 		ofPopMatrix();
 	ofPopStyle();
 
+
+	calcul_dft(rAudio, bufferSize,  norm, freq, real_part, im_part);
 // draw the DFT channel:
 	ofPushStyle();
 		ofPushMatrix();
