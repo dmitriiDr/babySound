@@ -137,7 +137,7 @@ void ofApp::update(){
 void ofApp::draw(){
 
 	ofSetColor(225);
-	ofDrawBitmapString("AUDIO OUTPUT EXAMPLE", 32, 32);
+	ofDrawBitmapString("BabySOUND", 32, 32);
 	ofDrawBitmapString("press 's' to unpause the audio\npress 'e' to pause the audio", 31, 92);
 	
 	ofNoFill();
@@ -192,7 +192,7 @@ void ofApp::draw(){
 	
 		
 	ofSetColor(225);
-	string reportString = "volume: ("+ofToString(volume, 2)+") modify with -/+ keys\npan: ("+ofToString(pan, 2)+") modify with mouse x\nsynthesis: ";
+	string reportString = "harmonic: ("+ofToString(harmonic, 2)+") modify with -/+ keys\nform: ("+ofToString(form, 2)+") modify with f/r\nsynthesis: ";
 	if( !bNoise ){
 		reportString += "sine wave (" + ofToString(freq, 2) + "hz) modify with mouse y";
 	}else{
