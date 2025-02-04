@@ -4,11 +4,11 @@
 // sin sample wave
 
 float calc_sin(float A, float f) {
-    return A * sin(2 * M_PI * f);
+    return A * sin(2 * f);
 }
 
 float calc_square(float A, float f) {
-    float sineWave = sin(2 * M_PI * f);
+    float sineWave = sin(2 * f);
     
     if (sineWave >= 0) {
         return A;
@@ -20,9 +20,9 @@ float calc_square(float A, float f) {
 float calc_square_F(float A, float f, int harmonic = 10) {
 	float sum = 0.0f;
 	for (int k = 1; k <= harmonic; k += 2) {
-		sum += sin(2 * M_PI * (k) * f) / (k);
+		sum += sin(2 * (k) * f) / (k);
 		if (k == harmonic) {
-			sum += sin(2 * M_PI * (k + A) * f) / (k + A);
+			sum += sin(2 * (k + A) * f) / (k + A);
 		}
 	}
 	return (4 * A / M_PI) * sum;
@@ -31,9 +31,9 @@ float calc_square_F(float A, float f, int harmonic = 10) {
 float calc_saw(float A, float f, int harmonic = 10) {
 	float sum = 0.0f;
 	for (int k = 1; k <= harmonic; k ++) {
-		sum += pow(-1, (k)) * sin(2 * M_PI * (k) * f) / (k);
+		sum += pow(-1, (k)) * sin(2 * (k) * f) / (k);
 		if (k == harmonic) {
-			sum += pow(-1, (k)) * sin(2 * M_PI * (k+A) * f) / (k+A);
+			sum += pow(-1, (k)) * sin(2 * (k+A) * f) / (k+A);
 		}
 	}
 
@@ -43,7 +43,7 @@ float calc_saw(float A, float f, int harmonic = 10) {
 float calc_saw_reverse(float A, float f, int harmonic = 10) {
 	float sum = 0.0f;
 	for (int k = 1; k <= harmonic; k++) {
-		sum += sin(2 * M_PI * (k + A) * f) / (k + A);
+		sum += sin(2 * (k + A) * f) / (k + A);
 	}
 
 	return (-2 * A / M_PI) * sum;
@@ -220,7 +220,7 @@ void ofApp::keyPressed(int key) {
 		//harmonic = MAX(volume, 0);
 	}
 	else if (key == '=' || key == '+') {
-		harmonic = std::min(harmonic + 1, 20);
+		harmonic = std::min(harmonic + 1, 50);
 		//volume = MIN(volume, 1);
 	}
 
@@ -263,7 +263,7 @@ void ofApp::mouseMoved(int x, int y ){
 	volume = (float)x / (float)width;
 	float height = (float)ofGetHeight();
 	float heightPct = ((height-y) / height);
-	freq = 2000.0f * heightPct;
+	freq = 1000.0f * heightPct;
 	phaseAdderTarget = (freq / (float) sampleRate) * TWO_PI;
 }
 
@@ -311,6 +311,9 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 	while (phase > TWO_PI) {
 		phase -= TWO_PI;
 	}
+	// if (phase > TWO_PI) phase -= TWO_PI;
+	// if (phase < 0) phase += TWO_PI;
+
 
 	if (bNoise == true) {
 		// ---------------------- noise --------------
@@ -322,26 +325,26 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 	else {
 		phaseAdder = 0.95f * phaseAdder + 0.05f * phaseAdderTarget;
 		for (size_t i = 0; i < buffer.getNumFrames(); i++) {
-
+		
 			float sample;
 
 			// uncomment if you want to use separate wave forms...................................
 
-			/*if (waveType == 0) {
-				sample = calc_sin(volume, phase);
-			}
-			else if (waveType == 1) {
-				sample = calc_square(volume, phase);
-			}
-			else if (waveType == 2) {
-				sample = calc_square_F(volume, phase, harmonic);
-			}
-			else if (waveType == 3) {
-				sample = calc_saw(volume, phase, harmonic);
-			}
-			else if (waveType == 4) {
-				sample = calc_saw_reverse(volume, phase, harmonic);
-			}*/
+			// if (waveType == 0) {
+			// 	sample = calc_sin(volume, phase);
+			// }
+			// else if (waveType == 1) {
+			// 	sample = calc_square(volume, phase);
+			// }
+			// else if (waveType == 2) {
+			// 	sample = calc_square_F(volume, phase, harmonic);
+			// }
+			// else if (waveType == 3) {
+			// 	sample = calc_saw(volume, phase, harmonic);
+			// }
+			// else if (waveType == 4) {
+			// 	sample = calc_saw_reverse(volume, phase, harmonic);
+			// }
 
 			//...................................................................................
 
@@ -367,11 +370,14 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 				sample = calc_saw(volume, phase, harmonic);
 			}
 
-			phase += phaseAdder;
+			float previousSample = sample;
+			sample = previousSample * 0.95 + sample * 0.05;
+
+			// phase += phaseAdder;
 			// float sample = calc_sin(volume, phase);
-			// phase += (freq / (float)sampleRate) * TWO_PI;
-			lAudio[i] = buffer[i * buffer.getNumChannels()] = sample * leftScale;
-			rAudio[i] = buffer[i * buffer.getNumChannels() + 1] = sample * rightScale;
+			phase += (freq / (float)sampleRate) * TWO_PI;
+			lAudio[i] = buffer[i * buffer.getNumChannels()] = sample * volume * leftScale;
+			rAudio[i] = buffer[i * buffer.getNumChannels() + 1] = sample * volume * rightScale;
 		}
 	}
 
