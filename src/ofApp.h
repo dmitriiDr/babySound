@@ -24,8 +24,8 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 		
 		void audioOut(ofSoundBuffer & buffer);
-		void BPF(float low_cutoff, float high_cutoff, float f_sampling, int order, std::vector<float>& a, std::vector<float>& b);
-		void apply_filter(const std::vector<float> input, const std::vector<float> output, const std::vector<float> a, const std::vector<float> b);
+		void BPF(float low_cutoff, float high_cutoff, float f_sampling, int order);
+		void apply_filter(std::vector<float>& input, std::vector<float>& output);
 		void calcul_dft(vector <float> & audio, int bufferSize,  vector <float> & norm, vector <float> & freq, vector <float> & real_part, vector <float> & im_part) ;
 		
 		ofSoundStream soundStream;
@@ -36,6 +36,8 @@ class ofApp : public ofBaseApp{
 		float 	volume=0.5f;
 		int bufferSize;
 		float   freq = 440.0f;
+		std::vector<float> a, b;
+		std::vector<float> rAudioFiltered, lAudioFiltered;
 
 
 		vector <float> lAudio;
