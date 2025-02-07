@@ -24,7 +24,7 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 		
 		void audioOut(ofSoundBuffer & buffer);
-		void BPF(float low_cutoff, float high_cutoff, float f_sampling, int order);
+		void Filter(float cutoff, float f_sampling, int order, int typeFilter);
 		void apply_filter(std::vector<float>& input, std::vector<float>& output);
 		void calcul_dft(vector <float> & audio, int bufferSize,  vector <float> & norm, vector <float> & freq, vector <float> & real_part, vector <float> & im_part) ;
 		
@@ -56,6 +56,7 @@ class ofApp : public ofBaseApp{
 		float 	phaseAdderTarget;
 		int 	waveType = 0;
 		int		harmonic = 10;
+		int		typeFilter = 0;
 		float	form = 0.0f;
 		//bool	fKeyHeld = false;
 
