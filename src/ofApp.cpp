@@ -53,54 +53,81 @@ float calc_saw_reverse(float A, float f, int harmonic = 10) {
 float show_harmonic(int harmonic, float A) {
 	return harmonic;
 }
-
-void ofApp::BPF(float low_cutoff, float high_cutoff, float f_sampling, int order) {
-    float nyquist = f_sampling * 0.5f;
-    float low = low_cutoff / nyquist;
-    float high = high_cutoff / nyquist;
-
-    float omega_low = tan(M_PI * low);
-    float omega_high = tan(M_PI * high);
-    float omega0 = sqrt(omega_low * omega_high);
-    float bw = omega_high - omega_low;
-
-    float d = 1.0 / cosh(order * acosh(1.0 / bw));
-    float norm = 1.0 / (1.0 + d * omega0);
-
-    // Resize vectors
-    a.resize(3);
-    b.resize(3);
-
-    // Set filter coefficients BPF const 0dB peak gain----------------------------------------------------------
-    // a[0] = 1;
-    // a[1] = -2 * omega0 * norm;
-    // a[2] = (1.0 - d * omega0) * norm;
-
-    // b[0] = d * omega0 * norm;
-    // b[1] = 0;
-    // b[2] = -b[0];
-	//----------------------------------------------------------------------------------------------------------
-
-	b[0] = omega0/norm;
-	b[1] = 2 * b[0];
-	b[2] = b[0];
-
-	a[0] = 1;
-	a[1] = 2 * (pow(omega0, 2) - 1) / norm;
-	a[2] = (1 - sqrt(2) * omega0 + pow(omega0, 2)) / norm;
+// FILTER
+// void ofApp::Filter(float cutoff, float f_sampling, int Q, int typeFilter) {
 
 
-}
+// 	float omega = TWO_PI * cutoff / f_sampling;
+// 	float alpha = sin(omega) / (2.0f * Q);
+// 	float cos_w = cos(omega);
+ 
+// 	a.resize(3);
+// 	b.resize(3);
 
+// 	if (int typeFilter = 0) {
+
+// 		b[0] = (1 - cos_w) / 2;
+// 		b[1] = 1 - cos_w;
+// 		b[2] = b[0];
+
+// 		a[0] = 1 + alpha;
+// 		a[1] = -2 * cos_w;
+// 		a[2] = 1 - alpha;
+
+// 	}
+
+// 	else if (int typeFilter = 1) {
+
+// 		b[0] = (1 - cos_w) / 2;
+// 		b[1] = 2 * b[0];
+// 		b[2] = b[0];
+
+// 		a[0] = 1 + alpha;
+// 		a[1] = -2 * cos_w;
+// 		a[2] = 1 - alpha;
+// 	}
+
+// 	else if (int typeFilter = 2) {
+
+// 		b[0] = 1 + alpha * pow(10, 6 / 40);
+// 		b[1] = -2 * cos_w;
+// 		b[2] = 1 - alpha * pow(10, 6 / 40);
+
+// 		a[0] = 1 + alpha / pow(10, 6 / 40);
+// 		a[1] = -2 * cos_w;
+// 		a[2] = 1 - alpha / pow(10, 6 / 40);
+
+// 	}
+
+// 	b[0] /= a[0];
+// 	b[1] /= a[0];
+// 	b[2] /= a[0];
+// 	a[1] /= a[0];
+// 	a[2] /= a[0];
+
+// 	//a[0] = 1;
+
+// }
+
+
+//void ofApp::apply_filter(std::vector<float>& input, std::vector<float>& output) {
+//	int n = input.size();
+//	output.resize(n, 0.0f);
+//
+//	for (int i = 2; i < n; i++) {
+//		output[i] = b[0] * input[i] + b[1] * input[i - 1] + b[2] * input[i - 2]
+//			- a[1] * output[i - 1] - a[2] * output[i - 2];
+//	}
+//}
 
 void ofApp::apply_filter(std::vector<float>& input, std::vector<float>& output) {
-    int n = input.size();
-    output.resize(n, 0.0f);
+	int n = input.size();
+	output.resize(n, 0.0f);
 
-    for (int i = 2; i < n; i++) {
-        output[i] = b[0] * input[i] + b[1] * input[i - 1] + b[2] * input[i - 2]
-                    - a[1] * output[i - 1] - a[2] * output[i - 2];
-    }
+	for (int i = 2; i < n; i++) {
+		output[i] = b[0] * input[i] + b[1] * input[i - 1] + b[2] * input[i - 2]
+			- a[1] * output[i - 1] - a[2] * output[i - 2];
+	}
 }
 
 
@@ -143,7 +170,7 @@ void ofApp::setup(){
 	lAudio.assign(bufferSize, 0.0);
 	rAudio.assign(bufferSize, 0.0);
 	lAudioFiltered.assign(bufferSize, 0.0);
-    rAudioFiltered.assign(bufferSize, 0.0);
+	rAudioFiltered.assign(bufferSize, 0.0);
 
 	BPF(1000, 1000, sampleRate, 10);
 	
@@ -446,19 +473,25 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 			// rAudio[i] = buffer[i * buffer.getNumChannels() + 1] = sample * rightScale;
 			// ----------------------------------------------------------------------------------------------------
 
-			lAudio[i] = sample * leftScale;
-			rAudio[i] = sample * rightScale;
+			// UNCOMMENT FOR FILTER
+			// lAudio[i] = sample * leftScale;
+			// rAudio[i] = sample * rightScale;
+
+			// Filter(100, sampleRate, 1, 2);
 
 
-			apply_filter(lAudio, lAudioFiltered);
-        	apply_filter(rAudio, rAudioFiltered);
+			// apply_filter(lAudio, lAudioFiltered);
+   //      		apply_filter(rAudio, rAudioFiltered);
 
-			for (size_t i = 0; i < buffer.getNumFrames(); i++) {
+   //          		buffer[i * buffer.getNumChannels()] = lAudioFiltered[I];
+   //          		buffer[i * buffer.getNumChannels() + 1] = rAudioFiltered[I];
 
-            buffer[i * buffer.getNumChannels()] = lAudioFiltered[i];
-            buffer[i * buffer.getNumChannels() + 1] = rAudioFiltered[i];
+			// COMMENT FOR FILTER
 
-        	}
+			lAudio[i] = buffer[i * buffer.getNumChannels()] = sample * leftScale;
+            		rAudio[i] = buffer[i * buffer.getNumChannels() + 1] = sample * rightScale;
+
+			
 			
 
 
