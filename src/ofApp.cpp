@@ -5,7 +5,7 @@
 // sin sample wave
 
 float calc_sin(float A, float f) {
-    return A * sin(2 * f);
+    return A * sin(f);
 }
 
 float calc_square(float A, float f) {
@@ -21,9 +21,9 @@ float calc_square(float A, float f) {
 float calc_square_F(float A, float f, int harmonic = 10) {
 	float sum = 0.0f;
 	for (int k = 1; k <= harmonic; k += 2) {
-		sum += sin(2 * (k) * f) / (k);
+		sum += sin((k) * f) / (k);
 		if (k == harmonic) {
-			sum += sin(2 * (k + A) * f) / (k + A);
+			sum += sin((k + A) * f) / (k + A);
 		}
 	}
 	return (4 * A / M_PI) * sum;
@@ -32,9 +32,9 @@ float calc_square_F(float A, float f, int harmonic = 10) {
 float calc_saw(float A, float f, int harmonic = 10) {
 	float sum = 0.0f;
 	for (int k = 1; k <= harmonic; k ++) {
-		sum += pow(-1, (k)) * sin(2 * (k) * f) / (k);
+		sum += pow(-1, (k)) * sin((k) * f) / (k);
 		if (k == harmonic) {
-			sum += pow(-1, (k)) * sin(2 * (k+A) * f) / (k+A);
+			sum += pow(-1, (k)) * sin((k+A) * f) / (k+A);
 		}
 	}
 
@@ -54,102 +54,108 @@ float show_harmonic(int harmonic, float A) {
 	return harmonic;
 }
 // FILTER
-// void ofApp::Filter(float cutoff, float f_sampling, int Q, int typeFilter) {
+void ofApp::Filter(float cutoff, float f_sampling, int Q, int typeFilter, float gainDB) {
+
+	a.resize(3);
+	b.resize(3);
+
+	double norm;
+	double K = tan(M_PI * cutoff / f_sampling);
+	double V = pow(10, gainDB / 20.0);
+	norm = 1 / (1.0 + K / double (Q) + K * K);
 
 
-// 	float omega = TWO_PI * cutoff / f_sampling;
-// 	float alpha = sin(omega) / (2.0f * Q);
-// 	float cos_w = cos(omega);
- 
-// 	a.resize(3);
-// 	b.resize(3);
+	// bq_type_lowpass
 
-// 	if (int typeFilter = 0) {
+	// norm = 1 / (1 + K / Q + K * K);
+	// a[0] = K * K * norm;
+	// a[1] = 2 * a[0];
+	// a[2] = a[0];
 
-// 		b[0] = (1 - cos_w) / 2;
-// 		b[1] = 1 - cos_w;
-// 		b[2] = b[0];
+	// b[1] = 2 * (K * K - 1) * norm;
+	// b[2] = (1 - K / Q + K * K) * norm;
 
-// 		a[0] = 1 + alpha;
-// 		a[1] = -2 * cos_w;
-// 		a[2] = 1 - alpha;
+	// bq_type_highpass
 
-// 	}
+	if (typeFilter == 0) {
 
-// 	else if (int typeFilter = 1) {
+		a[0] = 1 * norm;
+		a[1] = -2 * a[0];
+		a[2] = a[0];
+		b[1] = 2 * (K * K - 1) * norm;
+		b[2] = (1 - K / Q + K * K) * norm;
 
-// 		b[0] = (1 - cos_w) / 2;
-// 		b[1] = 2 * b[0];
-// 		b[2] = b[0];
-
-// 		a[0] = 1 + alpha;
-// 		a[1] = -2 * cos_w;
-// 		a[2] = 1 - alpha;
-// 	}
-
-// 	else if (int typeFilter = 2) {
-
-// 		b[0] = 1 + alpha * pow(10, 6 / 40);
-// 		b[1] = -2 * cos_w;
-// 		b[2] = 1 - alpha * pow(10, 6 / 40);
-
-// 		a[0] = 1 + alpha / pow(10, 6 / 40);
-// 		a[1] = -2 * cos_w;
-// 		a[2] = 1 - alpha / pow(10, 6 / 40);
-
-// 	}
-
-// 	b[0] /= a[0];
-// 	b[1] /= a[0];
-// 	b[2] /= a[0];
-// 	a[1] /= a[0];
-// 	a[2] /= a[0];
-
-// 	//a[0] = 1;
-
-// }
-
-
-//void ofApp::apply_filter(std::vector<float>& input, std::vector<float>& output) {
-//	int n = input.size();
-//	output.resize(n, 0.0f);
-//
-//	for (int i = 2; i < n; i++) {
-//		output[i] = b[0] * input[i] + b[1] * input[i - 1] + b[2] * input[i - 2]
-//			- a[1] * output[i - 1] - a[2] * output[i - 2];
-//	}
-//}
-
-void ofApp::apply_filter(std::vector<float>& input, std::vector<float>& output) {
-	int n = input.size();
-	output.resize(n, 0.0f);
-
-	for (int i = 2; i < n; i++) {
-		output[i] = b[0] * input[i] + b[1] * input[i - 1] + b[2] * input[i - 2]
-			- a[1] * output[i - 1] - a[2] * output[i - 2];
 	}
+
+	// bq_type_lowpass
+
+	else if (typeFilter == 1) {
+
+        a[0] = K * K * norm;
+        a[1] = 2 * a[0];
+        a[2] = a[0];
+
+        b[1] = 2 * (K * K - 1) * norm;
+        b[2] = (1.0f - K / double (Q) + K * K) * norm;
+    }
+
+	// Band-Pass filter
+
+	else if (typeFilter == 2) {
+
+		a[0] = K / double(Q) * norm;
+		a[1] = 0;
+		a[2] = -a[0];
+
+		b[1] = 2 * (K * K - 1) * norm;
+		b[2] = (1.0f - K / double(Q) + K * K) * norm;
+
+	}
+
+	// Notch filter
+	else if (typeFilter == 3) {
+
+		a[0] = (1 + K * K) * norm;
+		a[1] = 2 * (K * K - 1) * norm;
+		a[2] = a[0];
+
+		b[1] = a[1];
+		b[2] = (1.0f - K / double(Q) + K * K) * norm;
+
+	}
+
+	else if (typeFilter == 4) {
+
+
+	}
+
+
+	// b[0] /= a[0];
+	// b[1] /= a[0];
+	// b[2] /= a[0];
+	// a[1] /= a[0];
+	// a[2] /= a[0];
+
+	// a[0] = 1;
+
 }
 
 
-// float calcul_carre(float A, float f, float t, float brillance) {
+void ofApp::apply_filter(std::vector<float>& input, std::vector<float>& output, float gain, float& z1, float& z2) {
+    int n = input.size();
+    output.resize(n, 0.0f);
 
-// }
+    for (int i = 0; i < n; i++) {
+        float in = input[i];  // Current input sample
 
-// method to create
+        // Direct Form I Transposed (Biquad) Calculation
+        float out = a[0] * in + z1;
+        z1 = a[1] * in - b[1] * out + z2;
+        z2 = a[2] * in - b[2] * out;
 
-// void ofApp::cbAudioProcess(float* outputBuffer, int bufferSize, int nChannels) {
-//     for (int i = 0; i < bufferSize; i++) {
-
-//         float sample = calc_sin(volume, freq, phase);
-//         phase += (freq / (float)sampleRate) * TWO_PI;
-//         if (phase > TWO_PI) {
-//             phase -= TWO_PI;
-//         }
-
-//         outputBuffer[i * nChannels] = sample * volume;
-//         outputBuffer[i * nChannels + 1] = sample * volume;
-//     }
-// }
+        output[i] = out * gain;
+    }
+}
 
 
 //--------------------------------------------------------------
@@ -157,47 +163,28 @@ void ofApp::setup(){
 
 	ofBackground(34, 34, 34);
 	
-	bufferSize			= 512;
-	sampleRate 			= 6000; //= 44100;
+	bufferSize			= 1024;
+	sampleRate 			= 44100; //= 44100;
 	phase 				= 0;
 	phaseAdder 			= 0.0f;
 	phaseAdderTarget 	= 0.0f;
 	volume				= 0.5f;
 	bNoise 				= false;
 	int waveType 		= 0;
+	static float z1_L = 0.0f, z2_L = 0.0f;  // Left
+	static float z1_R = 0.0f, z2_R = 0.0f;  // Right
+
+	Filter(cutoff, sampleRate, 1, typeFilter, gainDB);
 
 
 	lAudio.assign(bufferSize, 0.0);
 	rAudio.assign(bufferSize, 0.0);
 	lAudioFiltered.assign(bufferSize, 0.0);
 	rAudioFiltered.assign(bufferSize, 0.0);
-
-	BPF(1000, 1000, sampleRate, 10);
 	
 	soundStream.printDeviceList();
 
 	ofSoundStreamSettings settings;
-
-	// if you want to set the device id to be different than the default:
-	//
-	//	auto devices = soundStream.getDeviceList();
-	//	settings.setOutDevice(devices[3]);
-
-	// you can also get devices for an specific api:
-	//
-	//	auto devices = soundStream.getDeviceList(ofSoundDevice::Api::PULSE);
-	//	settings.setOutDevice(devices[0]);
-
-	// or get the default device for an specific api:
-	//
-	// settings.api = ofSoundDevice::Api::PULSE;
-
-	// or by name:
-	//
-	//	auto devices = soundStream.getMatchingDevices("default");
-	//	if(!devices.empty()){
-	//		settings.setOutDevice(devices[0]);
-	//	}
 
 #ifdef TARGET_LINUX
 	// Latest linux versions default to the HDMI output
@@ -232,7 +219,7 @@ void ofApp::draw(){
 	ofSetColor(225);
 	ofDrawBitmapString("BabySOUND", 32, 32);
 	ofDrawBitmapString("press 's' to unpause the audio\npress 'e' to pause the audio", 31, 92);
-	
+
 	ofNoFill();
 	
 	// draw the left channel:
@@ -248,11 +235,15 @@ void ofApp::draw(){
 
 		ofSetColor(245, 58, 135);
 		ofSetLineWidth(3);
+		float minVal = -1.0f, maxVal = 1.0f;
+    	float centerY = 100.0f;
 					
 			ofBeginShape();
 			for (unsigned int i = 0; i < lAudio.size(); i++){
 				float x =  ofMap(i, 0, lAudio.size(), 0, 900, true);
-				ofVertex(x, 100 -lAudio[i]*180.0f);
+				// ofVertex(x, 100 -lAudio[i]*180.0f);
+				float y = ofClamp(lAudio[i], minVal, maxVal) * 90.0f;  // Scale by 90 instead of 180
+				ofVertex(x, centerY - y);
 			}
 			ofEndShape(false);
 			
@@ -284,17 +275,37 @@ void ofApp::draw(){
 			
 		ofPopMatrix();
 	ofPopStyle();
+
+	string filterName;
+    switch (typeFilter) {
+        case 0: filterName = "High-pass"; break;
+        case 1: filterName = "Low-pass"; break;
+        case 2: filterName = "Band-pass"; break;
+        case 3: filterName = "Notch"; break;
+		case 4: filterName = "No Filter"; break;
+        default: filterName = "Unknown"; break;
+    }
 	
 	
 		
 	ofSetColor(225);
-	string reportString = "harmonic: ("+ofToString(show_harmonic(harmonic, volume), 2)+") modify with -/+ keys\nform: ("+ofToString(form, 2)+") modify with f/r\nsynthesis: ";
-	if( !bNoise ){
-		reportString += "sine wave (" + ofToString(freq, 2) + "hz) modify with mouse y";
-	}else{
-		reportString += "noise";	
-	}
-	ofDrawBitmapString(reportString, 32, 579);
+	string reportString = 
+        "harmonic: (" + ofToString(show_harmonic(harmonic, volume), 2) + ") modify with -/+ keys\n"
+        "form: (" + ofToString(form, 2) + ") modify with f/r\n"
+        "synthesis: " + (bNoise ? "noise" : "wave (" + ofToString(freq, 2) + " Hz) modify with mouse y") + "\n"
+        "Filter Type: " + filterName + " (Change with 'A'/'D')\n"
+        "Cutoff Frequency: " + ofToString(cutoff, 2) + " Hz (Adjust with '[' and ']')";
+
+    ofDrawBitmapString(reportString, 32, 579);
+
+
+	// string reportString = "harmonic: ("+ofToString(show_harmonic(harmonic, volume), 2)+") modify with -/+ keys\nform: ("+ofToString(form, 2)+") modify with f/r\nsynthesis: ";
+	// if( !bNoise ){
+	// 	reportString += "sine wave (" + ofToString(freq, 2) + "hz) modify with mouse y";
+	// }else{
+	// 	reportString += "noise";	
+	// }
+	// ofDrawBitmapString(reportString, 32, 579);
 
 }
 
@@ -324,22 +335,36 @@ void ofApp::keyPressed(int key) {
 	if (key == '4') waveType = 3;
 	if (key == '5') waveType = 4;
 
-	/*if (key == 'f') {
-		fKeyHeld = true;
-	}*/
-
 	if (key == 'f') {
 		form = std::min(form + 0.1f, 1.0f);
 	}
 	if (key == 'r') {
 		form = std::max(form - 0.1f, 0.0f);
 	}
+
+	if (key == 'd' || key == 'D') {
+        typeFilter = (typeFilter + 1) % 5;  // Cycle filter types
+    }
+    if (key == 'a' || key == 'A') {
+        typeFilter = (typeFilter - 1 + 5) % 5;  // Cycle backward
+    }
+
+	    if (key == '[') {
+        cutoff = std::max(100.0f, cutoff - 100);  //  frequencies
+    }
+    if (key == ']') {
+        cutoff = std::min(10000.0f, cutoff + 100);  // Set max limit
+    }
+
+	if (typeFilter != 4) { // Only update filter if it's not "No Filter"
+        Filter(cutoff, sampleRate, 1, typeFilter, gainDB);
+    }
+
 }
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key) {
-    // if (key == '1') waveType = 0;  // Sine
-    // if (key == '2') waveType = 1;  // Square
+
 }
 
 //--------------------------------------------------------------
@@ -386,16 +411,28 @@ void ofApp::windowResized(int w, int h){
 
 }
 
-//--------------------------------------------------------------
+// --------------------------------------------------------------
 void ofApp::audioOut(ofSoundBuffer& buffer) {
 	pan = 0.5f;
 	float leftScale = 1 - pan;
 	float rightScale = pan;
+	float gainDB = 6.0f;
+
+	static float prevCutoff = -1;
+    static int prevFilterType = -1;
+	if (typeFilter != 4 && (prevCutoff != cutoff || prevFilterType != typeFilter)) {
+        Filter(cutoff, sampleRate, 1, typeFilter, gainDB);
+        prevCutoff = cutoff;
+        prevFilterType = typeFilter;
+    }
 
 	// sin (n) seems to have trouble when n is very large, so we
 	// keep phase in the range of 0-TWO_PI like this:
 	while (phase > TWO_PI) {
 		phase -= TWO_PI;
+	}
+	while (phase < 0) {
+		phase += TWO_PI;
 	}
 	// if (phase > TWO_PI) phase -= TWO_PI;
 	// if (phase < 0) phase += TWO_PI;
@@ -458,47 +495,42 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 
 			float previousSample = sample;
 			sample = previousSample * 0.95 + sample * 0.05;
-			// std::vector<float> sample_filtered;
 
-			// std::vector<float> a, b;
-			// BPF(80, 100, 1000, 2, a, b);
-			// apply_filter(sample, sample_filtered, a, b)
-
-			// phase += phaseAdder;
-			// float sample = calc_sin(volume, phase);
 			phase += (freq / (float)sampleRate) * TWO_PI;
 
-			// no filter-------------------------------------------------------------------------------------------
-			// lAudio[i] = buffer[i * buffer.getNumChannels()] = sample * leftScale;
-			// rAudio[i] = buffer[i * buffer.getNumChannels() + 1] = sample * rightScale;
-			// ----------------------------------------------------------------------------------------------------
 
 			// UNCOMMENT FOR FILTER
-			// lAudio[i] = sample * leftScale;
-			// rAudio[i] = sample * rightScale;
-
-			// Filter(100, sampleRate, 1, 2);
-
-
-			// apply_filter(lAudio, lAudioFiltered);
-   //      		apply_filter(rAudio, rAudioFiltered);
-
-   //          		buffer[i * buffer.getNumChannels()] = lAudioFiltered[I];
-   //          		buffer[i * buffer.getNumChannels() + 1] = rAudioFiltered[I];
-
-			// COMMENT FOR FILTER
-
-			lAudio[i] = buffer[i * buffer.getNumChannels()] = sample * leftScale;
-            		rAudio[i] = buffer[i * buffer.getNumChannels() + 1] = sample * rightScale;
-
-			
-			
-
+			lAudio[i] = sample * leftScale;
+			rAudio[i] = sample * rightScale;
 
 		}
+
+		if (typeFilter != 4) { // Apply filtering
+
+        apply_filter(lAudio, lAudioFiltered, pow(10, fabs(gainDB) / 20.0), z1_L, z2_L);
+        apply_filter(rAudio, rAudioFiltered, pow(10, fabs(gainDB) / 20.0), z1_R, z2_R);
+
+    	} else { // No Filter
+
+        lAudioFiltered = lAudio;
+        rAudioFiltered = rAudio;
+
+    	}
+
+		for (size_t i = 0; i < buffer.getNumFrames(); i++) {
+
+			lAudio[i] = buffer[i * buffer.getNumChannels()] = std::max(-1.0f, std::min(1.0f, lAudioFiltered[i]));
+			rAudio[i] = buffer[i * buffer.getNumChannels() + 1] = std::max(-1.0f, std::min(1.0f, rAudioFiltered[i]));
+		}
+
+		// COMMENT FOR FILTER
+
+		// lAudio[i] = buffer[i * buffer.getNumChannels()] = sample * leftScale;
+		// rAudio[i] = buffer[i * buffer.getNumChannels() + 1] = sample * rightScale;
 	}
 
 }
+
 
 //--------------------------------------------------------------
 void ofApp::gotMessage(ofMessage msg){
