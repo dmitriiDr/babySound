@@ -129,6 +129,19 @@ void ofApp::Filter(float cutoff, float f_sampling, int Q, int typeFilter, float 
 
 	}
 
+	// type_lowshelf
+
+	// else if (typeFilter == 5) {
+
+	// 	a[0] = (1 + sqrt(2*V) * K + V * K * K) * norm;
+	// 	a[1] = 2 * (V * K * K - 1) * norm;
+	// 	a[2] = (1 - sqrt(2*V) * K + V * K * K) * norm;
+
+	// 	b[1] = 2 * (K * K - 1) * norm;
+	// 	b[2] = (1 - sqrt(2) * K + K * K) * norm;
+
+	// }
+
 
 	// b[0] /= a[0];
 	// b[1] /= a[0];
@@ -228,7 +241,7 @@ void ofApp::draw(){
 		ofTranslate(32, 150, 0);
 			
 		ofSetColor(225);
-		ofDrawBitmapString("Left Channel", 4, 18);
+		ofDrawBitmapString("Audio Channel", 4, 18);
 		
 		ofSetLineWidth(1);	
 		ofDrawRectangle(0, 0, 900, 200);
@@ -269,7 +282,9 @@ void ofApp::draw(){
 			ofBeginShape();
 			for (unsigned int i = 0; i < norm.size(); i++){
 				float x =  ofMap(i, 0, norm.size(), 0, 900, true);
-				ofVertex(x, 100 -norm[i]*180.0f);
+				float y = ofClamp(norm[i], minVal, maxVal) * 90.0f;  // Scale by 90 instead of 180
+				ofVertex(x, centerY - y);
+				// ofVertex(x, 100 -norm[i]*180.0f);
 			}
 			ofEndShape(false);
 			
@@ -283,6 +298,7 @@ void ofApp::draw(){
         case 2: filterName = "Band-pass"; break;
         case 3: filterName = "Notch"; break;
 		case 4: filterName = "No Filter"; break;
+		case 5: filterName = "Lowshelf"; break;
         default: filterName = "Unknown"; break;
     }
 	
